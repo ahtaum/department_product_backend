@@ -15,7 +15,7 @@ Route.group(() => {
   Route.group(() => {
     Route.get("/", "ItemsController.getItems")
     Route.get("/:id", "ItemsController.getItem")
-    // Route.post("/add", "ItemsController.register")
+    Route.post("/add", "ItemsController.store")
   }).prefix("items").middleware("auth")
 
 }).prefix("v1")

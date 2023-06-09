@@ -24,7 +24,15 @@ export default class UsersController {
 
     public async getUser({ response, params }: HttpContextContract) {
         try {
-            const user = await User.findOrFail(params.id)
+            const user = await User.find(params.id)
+
+            if (!user) {
+                return response.status(404).json({
+                  code: 404,
+                  message: 'Not Found',
+                  error: 'User not found',
+                })
+            }
 
             return response.status(200).json({
                 code: 200,
@@ -50,7 +58,7 @@ export default class UsersController {
 
         try {
             const token = await auth.use("api").attempt(request.input("email"), request.input("password"), {
-                expiresIn: "10 days"
+                expiresIn: "1 days"
             })
 
             const userdata: User | null = await User.findBy("email", request.input("email"))

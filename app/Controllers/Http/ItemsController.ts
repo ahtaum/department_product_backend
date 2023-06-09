@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Item from 'App/Models/Item'
 
 export default class ItemsController {
@@ -23,7 +24,15 @@ export default class ItemsController {
 
     public async getItem({ response, params }: HttpContextContract) {
         try {
-            const item = await Item.findOrFail(params.id)
+            const item = await Item.find(params.id)
+
+            if (!item) {
+              return response.status(404).json({
+                code: 404,
+                message: 'Not Found',
+                error: 'Item not found',
+              })
+            }
 
             return response.status(200).json({
                 code: 200,
@@ -39,15 +48,32 @@ export default class ItemsController {
         }
     }
 
-    // public async store({ request, response }: HttpContextContract) {
-    //     try {
-            
-    //     } catch (error) {
-    //         return response.status(500).json({
-    //             code: 500,
-    //             message: "ERROR",
-    //             error: error.message 
-    //         })
-    //     }
-    // } 
+    public async store({ request, response }: HttpContextContract) {
+        await request.validate({
+            schema: schema.create({
+              name: schema.string({ trim: true }),
+              price: schema.number(),
+            })
+          })          
+        
+        try {
+            const data = new Item()
+            data.name = request.input("name")
+            data.price = request.input("price")
+
+            await data.save()
+
+            return response.status(201).json({
+                code: 201,
+                message: 'Item successfuly added!',
+                result: data,
+            })
+        } catch (error) {
+            return response.status(500).json({
+                code: 500,
+                message: "ERROR",
+                error: error.message 
+            })
+        }
+    } 
 }
