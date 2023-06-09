@@ -51,10 +51,10 @@ export default class ItemsController {
     public async store({ request, response }: HttpContextContract) {
         await request.validate({
             schema: schema.create({
-              name: schema.string({ trim: true }),
-              price: schema.number(),
+                name: schema.string({ trim: true }),
+                price: schema.number(),
             })
-          })          
+        })          
         
         try {
             const data = new Item()
@@ -75,5 +75,54 @@ export default class ItemsController {
                 error: error.message 
             })
         }
-    } 
+    }
+
+    public async update({ request, response, params }: HttpContextContract) {
+        const validateInput = await request.validate({
+            schema: schema.create({
+                name: schema.string({ trim: true }),
+                price: schema.number(),
+            })
+        }) 
+
+        try {
+            const item = await Item.findOrFail(params.id)
+
+            item.name = validateInput.name
+            item.price = validateInput.price
+
+            await item.save()
+
+            return response.status(200).json({
+                code: 200,
+                message: 'Item updated successfully!',
+                result: item,
+            })
+        } catch (error) {
+            return response.status(500).json({
+                code: 500,
+                message: "ERROR",
+                error: error.message 
+            })
+        }
+    }
+
+    public async destroy({ response, params }: HttpContextContract) {
+        try {
+          const item = await Item.findOrFail(params.id)
+      
+          await item.delete()
+      
+          return response.status(200).json({
+            code: 200,
+            message: 'Item deleted successfully!'
+          })
+        } catch (error) {
+          return response.status(500).json({
+            code: 500,
+            message: 'Error',
+            error: error.message,
+          })
+        }
+    }      
 }
