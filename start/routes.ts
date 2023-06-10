@@ -11,13 +11,26 @@ Route.group(() => {
     Route.post("/add", "UsersController.register")
   }).prefix("users")
 
-  // Items Data
   Route.group(() => {
-    Route.get("/", "ItemsController.getItems")
-    Route.get("/:id", "ItemsController.getItem")
-    Route.post("/add", "ItemsController.store")
-    Route.put("/update/:id", "ItemsController.update")
-    Route.delete("/delete/:id", "ItemsController.destroy")
-  }).prefix("items").middleware("auth")
+
+    // Items Data
+    Route.group(() => {
+      Route.get("/", "ItemsController.getItems")
+      Route.get("/:id", "ItemsController.getItem")
+      Route.post("/add", "ItemsController.store")
+      Route.put("/update/:id", "ItemsController.update")
+      Route.delete("/delete/:id", "ItemsController.destroy")
+    }).prefix("items")
+  
+    // Customer Data
+    Route.group(() => {
+      Route.get("/", "CustomersController.getCustomers")
+      Route.get("/:id", "CustomersController.getCustomer")
+      Route.post("/add", "CustomersController.store")
+      Route.put("/update/:id", "CustomersController.update")
+      Route.delete("/delete/:id", "CustomersController.destroy")
+    }).prefix("customers")
+
+  }).middleware("auth")
 
 }).prefix("v1")

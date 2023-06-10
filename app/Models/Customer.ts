@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, HasMany, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, HasMany, beforeSave, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Sales from './Sales'
 
 export default class Customer extends BaseModel {
@@ -13,7 +13,7 @@ export default class Customer extends BaseModel {
   public name: string
 
   @column()
-  public phone: number
+  public phone: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -23,4 +23,23 @@ export default class Customer extends BaseModel {
 
   @hasMany(() => Sales)
   public sales: HasMany<typeof Sales>
+
+  @beforeSave()
+  public static async generateCode(customer: Customer) {
+    if (!customer.code) {
+      const itemId = generateItemId()
+      const uniqueCode = generateUniqueCode(itemId)
+      customer.code = uniqueCode
+    }
+  }
+}
+
+function generateItemId(): string {
+  const timestamp = Date.now().toString()
+  return timestamp
+}
+
+function generateUniqueCode(customerID: string): string {
+  const random = Math.random().toString(36).substr(2, 6)
+  return customerID + random
 }
