@@ -7,7 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary()
       table.string('code', 15).unique()
-      table.dateTime('date')
+      table.string('date')
       table.integer('customer_id').unsigned().references('customers.id').onDelete('CASCADE')
       table.decimal('subtotal')
       table.decimal('discount')

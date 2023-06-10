@@ -11,7 +11,7 @@ export default class Sales extends BaseModel {
   public code: string
 
   @column()
-  public date: DateTime
+  public date: string
 
   @column()
   public customerId: number
@@ -39,4 +39,10 @@ export default class Sales extends BaseModel {
 
   @hasMany(() => SalesDet)
   public salesDets: HasMany<typeof SalesDet>
+
+  public static generateUniqueCode(): string {
+    const timestamp = Date.now().toString()
+    const random = Math.random().toString(36).substr(2, 6)
+    return timestamp + random
+  }
 }

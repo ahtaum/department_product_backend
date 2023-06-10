@@ -32,6 +32,14 @@ Route.group(() => {
       Route.delete("/delete/:id", "CustomersController.destroy")
     }).prefix("customers")
 
+    // Sales Data
+    Route.group(() => {
+      Route.get("/", "SalesController.getSales")
+      Route.get("/:id", "SalesController.getSale")
+      Route.post("/createSale", "SalesController.createSale")
+      Route.delete("/deleteSale/:id", "SalesController.deleteSale")
+    }).prefix("sales")
+
   }).middleware("auth")
 
 }).prefix("v1")
