@@ -5,7 +5,7 @@ import Item from 'App/Models/Item'
 export default class ItemsController {
     public async getItems({ response }: HttpContextContract) {
         try {
-            const items = await Item.all()
+            const items = await Item.query().preload('salesDets')
 
             return response.status(200).json({
                 code: 200,
@@ -24,7 +24,7 @@ export default class ItemsController {
 
     public async getItem({ response, params }: HttpContextContract) {
         try {
-            const item = await Item.find(params.id)
+            const item = await Item.query().preload('salesDets').where('id', params.id).first()
 
             if (!item) {
               return response.status(404).json({

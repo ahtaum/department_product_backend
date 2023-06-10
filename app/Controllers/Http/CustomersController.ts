@@ -5,7 +5,7 @@ import Customer from 'App/Models/Customer'
 export default class CustomersController {
     public async getCustomers({ response }: HttpContextContract) {
         try {
-            const customers = await Customer.all()
+            const customers = await Customer.query().preload('sales')
 
             return response.status(200).json({
                 code: 200,
@@ -24,7 +24,7 @@ export default class CustomersController {
 
     public async getCustomer({ response, params }: HttpContextContract) {
         try {
-            const customer = await Customer.find(params.id)
+            const customer =  await Customer.query().preload('sales').where('id', params.id).first()
 
             if (!customer) {
               return response.status(404).json({

@@ -11,6 +11,7 @@ Route.group(() => {
     Route.post("/add", "UsersController.register")
   }).prefix("users")
 
+  // Authorization Environtment
   Route.group(() => {
 
     // Items Data
