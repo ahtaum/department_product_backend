@@ -98,13 +98,28 @@ export default class UsersController {
     public async register({ request, response }: HttpContextContract) {
         await request.validate({
             schema: schema.create({
-              email: schema.string({ trim: true }, [rules.email()]),
-              name: schema.string({ trim: true }, [rules.maxLength(10)]),
-              password: schema.string({ trim: true }),
+              email: schema.string({ trim: true }, [
+                rules.email(),
+                rules.required(),
+              ]),
+              name: schema.string({ trim: true }, [
+                rules.maxLength(10),
+                rules.required(),
+              ]),
+              password: schema.string({ trim: true }, [
+                rules.required(),
+              ]),
               password_confirm: schema.string({ trim: true }, [
                 rules.confirmed('password'),
+                rules.required(),
               ]),
-            })
+            }),
+            messages: {
+              required: '{{ field }} is required.',
+              'name.maxLength': 'Name should not exceed 10 characters.',
+              'email.email': 'Invalid email format.',
+              'password_confirm.confirmed': 'Password confirmation does not match.',
+            },
         })
 
         try {

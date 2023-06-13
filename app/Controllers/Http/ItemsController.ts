@@ -53,7 +53,11 @@ export default class ItemsController {
             schema: schema.create({
                 name: schema.string({ trim: true }),
                 price: schema.number(),
-            })
+            }),
+            messages: {
+                'name.required': "name is required!",
+                "price.required": "price is required!"
+            }
         })          
         
         try {
@@ -82,7 +86,11 @@ export default class ItemsController {
             schema: schema.create({
                 name: schema.string({ trim: true }),
                 price: schema.number(),
-            })
+            }),
+            messages: {
+                'name.required': "name is required!",
+                "price.required": "price is required!"
+            }
         }) 
 
         try {

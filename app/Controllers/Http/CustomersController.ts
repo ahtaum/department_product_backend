@@ -53,7 +53,11 @@ export default class CustomersController {
             schema: schema.create({
                 name: schema.string({ trim: true }),
                 phone: schema.string({ trim: true }),
-            })
+            }),
+            messages: {
+                'name.required': "name is required!",
+                "phone.required": "price is required!"
+            }
         })          
         
         try {
