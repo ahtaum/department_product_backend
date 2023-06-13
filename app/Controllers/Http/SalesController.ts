@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Customer from 'App/Models/Customer'
 import Item from 'App/Models/Item'
 import Sales from 'App/Models/Sales'
@@ -124,6 +125,113 @@ export default class SalesController {
         message: 'OK',
         sale: sale,
       })
+    } catch (error) {
+      return response.status(500).json({
+        code: 500,
+        message: 'ERROR',
+        error: error.message,
+      })
+    }
+  }
+
+  public async updateSale({ params, request, response }: HttpContextContract) {
+    try {
+      const saleId = params.id
+      const { customerId, items, discount, shippingCost, date } = request.only([
+        'customerId',
+        'items',
+        'discount',
+        'shippingCost',
+        'date',
+      ])
+  
+      // Cek apakah penjualan valid
+      const sale = await Sales.find(saleId)
+      if (!sale) {
+        return response.status(404).json({
+          code: 404,
+          message: 'Not Found',
+          error: 'Sale not found',
+        })
+      }
+  
+      // Cek apakah customer valid
+      const customer = await Customer.find(customerId)
+      if (!customer) {
+        return response.status(404).json({
+          code: 404,
+          message: 'Not Found',
+          error: 'Customer not found',
+        })
+      }
+  
+      // Mulai transaksi database
+      const trx = await Database.transaction()
+  
+      try {
+        // Hapus detail penjualan yang ada
+        await sale.related('salesDets').query().delete()
+  
+        // Update data penjualan
+        sale.customerId = customer.id
+        sale.date = date ? new Date(date).toISOString() : sale.date
+        sale.discount = discount || 0
+        sale.shippingCost = shippingCost || 0
+        sale.subtotal = 0
+        sale.totalCost = 0
+        await sale.save()
+  
+        // Iterasi dan tambahkan detail penjualan yang baru
+        for (const itemData of items) {
+          const { itemId, quantity } = itemData
+  
+          // Cek apakah item valid
+          const item = await Item.find(itemId)
+          if (!item) {
+            await trx.rollback()
+  
+            return response.status(404).json({
+              code: 404,
+              message: 'Not Found',
+              error: `Item with ID ${itemId} not found`,
+            })
+          }
+  
+          // Buat data detail penjualan
+          const salesDet = new SalesDet()
+          salesDet.itemId = item.id
+          salesDet.listPrice = item.price
+          salesDet.quantity = quantity
+          salesDet.discountPercentage = 0
+          salesDet.discountAmount = 0
+          salesDet.discountedPrice = item.price
+          salesDet.total = item.price * quantity
+          await salesDet.save()
+  
+          await sale.related('salesDets').save(salesDet)
+  
+          // Update subtotal dan total penjualan
+          sale.subtotal += salesDet.total
+          sale.totalCost += salesDet.total
+          await sale.save()
+        }
+  
+        await trx.commit()
+  
+        return response.status(200).json({
+          code: 200,
+          message: 'OK',
+          sale: sale,
+        })
+      } catch (error) {
+        await trx.rollback()
+  
+        return response.status(500).json({
+          code: 500,
+          message: 'ERROR',
+          error: error.message,
+        })
+      }
     } catch (error) {
       return response.status(500).json({
         code: 500,
