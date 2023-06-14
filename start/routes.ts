@@ -36,6 +36,7 @@ Route.group(() => {
     Route.group(() => {
       Route.get("/", "SalesController.getSales")
       Route.get("/:id", "SalesController.getSale")
+      Route.get("/get/transaction", "SalesController.getCustomersWithSalesAndSalesDet")
       Route.post("/createSale", "SalesController.createSale")
       Route.put("/updateSale/:id", "SalesController.updateSale")
       Route.delete("/deleteSale/:id", "SalesController.deleteSale")

@@ -56,6 +56,92 @@ export default class SalesController {
     }
   }
 
+  // masih test
+  // public async getCustomersWithSalesAndSalesDet({ response }: HttpContextContract) {
+  //   try {
+  //     const customers = await Customer.query().has('sales').preload('sales', (query) => {
+  //       query.preload('salesDets')
+  //     })
+
+  //     const customerData = customers.map((customer) => {
+  //       let totalQuantity = 0
+
+  //       customer.sales.forEach((sale) => {
+  //         sale.salesDets.forEach((salesDet) => {
+  //           totalQuantity += salesDet.quantity
+  //         })
+  //       })
+
+  //       return {
+  //         customer: customer,
+  //         totalQuantity: totalQuantity,
+  //       }
+  //     })
+
+  //     return response.status(200).json({
+  //       code: 200,
+  //       message: 'OK',
+  //       customerData: customerData,
+  //     })
+  //   } catch (error) {
+  //     return response.status(500).json({
+  //       code: 500,
+  //       message: 'ERROR',
+  //       error: error.message,
+  //     })
+  //   }
+  // }
+
+  public async getCustomersWithSalesAndSalesDet({ response }: HttpContextContract) {
+    try {
+      const customers = await Customer.query().has('sales').preload('sales', (query) => {
+        query.preload('salesDets')
+      })
+
+      const tableData = customers.map((customer, index) => {
+        let totalQuantity = 0
+        let subtotal = 0
+        let discount = 0
+        let shippingCost = 0
+        let totalCost = 0
+
+        customer.sales.forEach((sale) => {
+          sale.salesDets.forEach((salesDet) => {
+            totalQuantity += salesDet.quantity
+          })
+
+          subtotal += Number(sale.subtotal || 0)
+          discount += Number(sale.discount || 0)
+          shippingCost += Number(sale.shippingCost || 0)
+          totalCost += Number(sale.totalCost || 0)
+        })
+
+        return {
+          no_transaksi: index + 1,
+          tanggal: customer.sales[0]?.date,
+          nama_Customer: customer.name,
+          jumlah_barang: totalQuantity,
+          sub_total: subtotal,
+          diskon: discount,
+          ongkir: shippingCost,
+          total: totalCost,
+        }
+      })
+
+      return response.status(200).json({
+        code: 200,
+        message: 'OK',
+        tableData: tableData,
+      })
+    } catch (error) {
+      return response.status(500).json({
+        code: 500,
+        message: 'ERROR',
+        error: error.message,
+      })
+    }
+  }
+
   public async createSale({ request, response }: HttpContextContract) {
     try {
       const { customerId, items, discount, shippingCost, date } = request.only([
