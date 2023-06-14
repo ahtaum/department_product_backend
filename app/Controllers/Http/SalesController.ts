@@ -4,6 +4,7 @@ import Customer from 'App/Models/Customer'
 import Item from 'App/Models/Item'
 import Sales from 'App/Models/Sales'
 import SalesDet from 'App/Models/SalesDet'
+import { Decimal } from 'decimal.js'
 
 export default class SalesController {
   public async getSales({ response }: HttpContextContract) {
@@ -98,33 +99,37 @@ export default class SalesController {
         query.preload('salesDets')
       })
 
+      let grandTotal = new Decimal(0)
+
       const tableData = customers.map((customer, index) => {
         let totalQuantity = 0
-        let subtotal = 0
-        let discount = 0
-        let shippingCost = 0
-        let totalCost = 0
+        let subtotal = new Decimal(0)
+        let discount = new Decimal(0)
+        let shippingCost = new Decimal(0)
+        let totalCost = new Decimal(0)
 
         customer.sales.forEach((sale) => {
           sale.salesDets.forEach((salesDet) => {
             totalQuantity += salesDet.quantity
           })
 
-          subtotal += Number(sale.subtotal || 0)
-          discount += Number(sale.discount || 0)
-          shippingCost += Number(sale.shippingCost || 0)
-          totalCost += Number(sale.totalCost || 0)
+          subtotal = subtotal.plus(new Decimal(sale.subtotal || 0))
+          discount = discount.plus(new Decimal(sale.discount || 0))
+          shippingCost = shippingCost.plus(new Decimal(sale.shippingCost || 0))
+          totalCost = totalCost.plus(new Decimal(sale.totalCost || 0))
         })
+
+        grandTotal = grandTotal.plus(totalCost)
 
         return {
           no_transaksi: index + 1,
           tanggal: customer.sales[0]?.date,
           nama_Customer: customer.name,
           jumlah_barang: totalQuantity,
-          sub_total: subtotal,
-          diskon: discount,
-          ongkir: shippingCost,
-          total: totalCost,
+          sub_total: subtotal.toFixed(2),
+          diskon: discount || 0,
+          ongkir: shippingCost || 0,
+          total: totalCost.toFixed(2),
         }
       })
 
@@ -132,6 +137,7 @@ export default class SalesController {
         code: 200,
         message: 'OK',
         tableData: tableData,
+        grandTotal: grandTotal.toFixed(2),
       })
     } catch (error) {
       return response.status(500).json({
