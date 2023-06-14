@@ -93,46 +93,91 @@ export default class SalesController {
   //   }
   // }
 
+  // masih test
+  // public async getCustomersWithSalesAndSalesDet({ response }: HttpContextContract) {
+  //   try {
+  //     const customers = await Customer.query().has('sales').preload('sales', (query) => {
+  //       query.preload('salesDets')
+  //     })
+
+  //     let grandTotal = new Decimal(0)
+
+  //     const tableData = customers.map((customer, index) => {
+  //       let totalQuantity = 0
+  //       let subtotal = new Decimal(0)
+  //       let discount = new Decimal(0)
+  //       let shippingCost = new Decimal(0)
+  //       let totalCost = new Decimal(0)
+
+  //       customer.sales.forEach((sale) => {
+  //         sale.salesDets.forEach((salesDet) => {
+  //           totalQuantity += salesDet.quantity
+  //         })
+
+  //         subtotal = subtotal.plus(new Decimal(sale.subtotal || 0))
+  //         discount = discount.plus(new Decimal(sale.discount || 0))
+  //         shippingCost = shippingCost.plus(new Decimal(sale.shippingCost || 0))
+  //         totalCost = totalCost.plus(new Decimal(sale.totalCost || 0))
+  //       })
+
+  //       grandTotal = grandTotal.plus(totalCost)
+
+  //       return {
+  //         no_transaksi: index + 1,
+  //         tanggal: customer.sales[0]?.date,
+  //         nama_Customer: customer.name,
+  //         jumlah_barang: totalQuantity,
+  //         sub_total: subtotal.toFixed(2),
+  //         diskon: discount || 0,
+  //         ongkir: shippingCost || 0,
+  //         total: totalCost.toFixed(2),
+  //       }
+  //     })
+
+  //     return response.status(200).json({
+  //       code: 200,
+  //       message: 'OK',
+  //       tableData: tableData,
+  //       grandTotal: grandTotal.toFixed(2),
+  //     })
+  //   } catch (error) {
+  //     return response.status(500).json({
+  //       code: 500,
+  //       message: 'ERROR',
+  //       error: error.message,
+  //     })
+  //   }
+  // }
+
   public async getCustomersWithSalesAndSalesDet({ response }: HttpContextContract) {
     try {
       const customers = await Customer.query().has('sales').preload('sales', (query) => {
         query.preload('salesDets')
       })
-
-      let grandTotal = new Decimal(0)
-
-      const tableData = customers.map((customer, index) => {
-        let totalQuantity = 0
-        let subtotal = new Decimal(0)
-        let discount = new Decimal(0)
-        let shippingCost = new Decimal(0)
-        let totalCost = new Decimal(0)
-
-        customer.sales.forEach((sale) => {
-          sale.salesDets.forEach((salesDet) => {
-            totalQuantity += salesDet.quantity
-          })
-
-          subtotal = subtotal.plus(new Decimal(sale.subtotal || 0))
-          discount = discount.plus(new Decimal(sale.discount || 0))
-          shippingCost = shippingCost.plus(new Decimal(sale.shippingCost || 0))
-          totalCost = totalCost.plus(new Decimal(sale.totalCost || 0))
+  
+      let grandTotal = new Decimal(0);
+  
+      const tableData = customers.flatMap((customer, index) => {
+        return customer.sales.map((sale) => {
+          const totalQuantity = sale.salesDets.reduce((total, salesDet) => {
+            return total + salesDet.quantity
+          }, 0)
+  
+          grandTotal = grandTotal.plus(new Decimal(sale.totalCost || 0));
+  
+          return {
+            transaction_no: index + 1,
+            date: sale.date,
+            customer_name: customer.name,
+            quantity: totalQuantity,
+            subtotal: sale.subtotal || 0,
+            discount: sale.discount || 0,
+            shipping_cost: sale.shippingCost || 0,
+            total_cost: sale.totalCost || 0,
+          }
         })
-
-        grandTotal = grandTotal.plus(totalCost)
-
-        return {
-          no_transaksi: index + 1,
-          tanggal: customer.sales[0]?.date,
-          nama_Customer: customer.name,
-          jumlah_barang: totalQuantity,
-          sub_total: subtotal.toFixed(2),
-          diskon: discount || 0,
-          ongkir: shippingCost || 0,
-          total: totalCost.toFixed(2),
-        }
       })
-
+  
       return response.status(200).json({
         code: 200,
         message: 'OK',
@@ -146,8 +191,8 @@ export default class SalesController {
         error: error.message,
       })
     }
-  }
-
+  }  
+  
   public async createSale({ request, response }: HttpContextContract) {
     try {
       const { customerId, items, discount, shippingCost, date } = request.only([
