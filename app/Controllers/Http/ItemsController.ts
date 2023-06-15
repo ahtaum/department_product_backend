@@ -132,5 +132,5 @@ export default class ItemsController {
             error: error.message,
           })
         }
-    }      
+    }  
 }
