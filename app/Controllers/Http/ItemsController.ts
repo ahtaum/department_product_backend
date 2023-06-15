@@ -1,5 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { schema, rules } from '@ioc:Adonis/Core/Validator'
+import { schema } from '@ioc:Adonis/Core/Validator'
 import Item from 'App/Models/Item'
 
 export default class ItemsController {
@@ -132,5 +132,5 @@ export default class ItemsController {
             error: error.message,
           })
         }
-    }      
+    }  
 }
