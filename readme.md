@@ -3,7 +3,9 @@
 
 - copy and rename **env.example** to **.env** and configure database
 
-- run migrate `node ace migration:run --seed` or `node ace migration:fresh --seed` to migrate database and adding default user data
+- run migrate `node ace migration:run` or `node ace migration:fresh` to migrate database and adding default user data
+
+- run seeder users for generate default users name, email, and passwod by type in console `node ace db:seed`
 
 - run in local by typing `node ace serve --watch`
 
