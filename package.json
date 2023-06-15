@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node ace serve --watch",
     "build": "node ace build --production",
-    "start": "node ace serve --watch",
+    "start": "node build/server.js",
     "test": "node ace test"
   },
   "devDependencies": {
